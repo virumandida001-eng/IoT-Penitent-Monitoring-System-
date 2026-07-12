@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="IoT Patient Health Monitoring System - Read-only Patient Mobile App.">
+  <title>IoT Patient Health Monitoring</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <!-- Local Chart.js -->
+  <script src="chart.js"></script>
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+  <!-- Outer shell: acts as a desktop centering device and mobile fullscreen wrapper -->
+  <div class="phone-frame">
+    <div class="phone-screen">
+
+      <!-- 1. SPLASH SCREEN -->
+      <div id="splash-screen" class="view active">
+        <div class="splash-content">
+          <div class="splash-logo">
+            <span class="material-symbols-outlined logo-icon">shield_heart</span>
+          </div>
+          <h1 class="splash-title">IoT Patient Health</h1>
+          <p class="splash-subtitle">Monitoring System</p>
+          <div class="splash-loader">
+            <div class="loader-bar"></div>
+          </div>
+          <span class="splash-tagline">Your health, monitored in real time.</span>
+        </div>
+      </div>
+
+      <!-- MAIN APP CONTAINER (Tabs/Navigation) -->
+      <div id="main-app" class="app-container">
+        
+        <!-- Persistent MD3 Header -->
+        <header class="app-header-md3">
+          <div class="header-left">
+            <span class="device-status-badge" id="header-bt-status">
+              <span class="material-symbols-outlined bt-icon">bluetooth</span>
+            </span>
+            <span class="device-battery" id="header-device-battery" style="display: flex;">
+              <span class="battery-icon-shape">
+                <span class="battery-body">
+                  <span class="battery-fill" id="battery-fill-bar" style="height: 85%;"></span>
+                </span>
+                <span class="battery-nub"></span>
+              </span>
+              <span id="device-battery-val">85%</span>
+            </span>
+          </div>
+          <div class="header-right">
+            <div class="header-profile">
+              <div class="avatar-circle">
+                <span class="material-symbols-outlined">person</span>
+              </div>
+              <span class="patient-header-name">Alexander Pierce</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- View Display Container -->
+        <main class="app-content">
+
+          <!-- 2. HOME / DASHBOARD SCREEN -->
+          <section id="dashboard-view" class="sub-view active">
+            <div class="dashboard-scroll">
+              
+              <!-- Dashboard Title -->
+              <h2 class="dashboard-title">Patient Health Monitoring Dashboard</h2>
+
+              <!-- Demo Simulator Banner -->
+              <div class="demo-banner">
+                <div class="demo-banner-content">
+                  <span class="material-symbols-outlined info-icon">info</span>
+                  <div>
+                    <strong>IoT Vital Simulator</strong>
+                    <p>Toggle patient state to test real-time warning & critical threshold alerts.</p>
+                  </div>
+                </div>
+                <div class="demo-btn-group">
+                  <button class="btn btn-demo-normal" onclick="vitalSimulator.setCondition('normal')">Normal State</button>
+                  <button class="btn btn-demo-warning" onclick="vitalSimulator.setCondition('warning')">Warning State</button>
+                  <button class="btn btn-demo-critical" onclick="vitalSimulator.setCondition('critical')">Critical State</button>
+                </div>
+              </div>
+
+              <!-- Vitals Stack (Stacked Vertically) -->
+              <div class="vitals-stack">
+                
+                <!-- Card 1: Heart Rate -->
+                <div class="vital-card hr-card normal-state" id="card-heart-rate">
+                  <div class="vital-card-accent"></div>
+                  <div class="vital-card-main">
+                    <div class="vital-card-header">
+                      <div class="vital-title-group">
+                        <span class="material-symbols-outlined icon heart-icon">favorite</span>
+                        <span class="vital-title">Heart Rate</span>
+                      </div>
+                      <span class="status-badge badge-normal" id="badge-heart-rate">Normal</span>
+                    </div>
+                    <div class="vital-card-body">
+                      <span class="vital-value" id="val-heart-rate">78</span>
+                      <span class="vital-unit">BPM</span>
+                    </div>
+                    <div class="vital-card-footer">
+                      <!-- Beating line graph container -->
+                      <div class="ecg-waveform">
+                        <svg viewBox="0 0 100 20" class="ecg-svg">
+                          <path d="M0,10 L30,10 L35,2 L40,18 L45,10 L50,10 L53,7 L56,13 L59,10 L100,10" fill="none" stroke="#e74c3c" stroke-width="1.5" class="ecg-path"></path>
+                        </svg>
+                      </div>
+                      <span class="timestamp" id="ts-heart-rate">Synced: Just now</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Blood Pressure -->
+                <div class="vital-card bp-card normal-state" id="card-bp">
+                  <div class="vital-card-accent"></div>
+                  <div class="vital-card-main">
+                    <div class="vital-card-header">
+                      <div class="vital-title-group">
+                        <span class="material-symbols-outlined icon bp-icon">stethoscope</span>
+                        <span class="vital-title">Blood Pressure</span>
+                      </div>
+                      <span class="status-badge badge-normal" id="badge-bp">Normal</span>
+                    </div>
+                    <div class="vital-card-body">
+                      <span class="vital-value" id="val-blood-pressure">120/80</span>
+                      <span class="vital-unit">mmHg</span>
+                    </div>
+                    <div class="vital-card-footer">
+                      <span class="vital-sparkline-placeholder">
+                        <canvas id="sparkline-bp" width="90" height="20"></canvas>
+                      </span>
+                      <span class="timestamp" id="ts-bp">Synced: Just now</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Body Temperature -->
+                <div class="vital-card temp-card normal-state" id="card-temp">
+                  <div class="vital-card-accent"></div>
+                  <div class="vital-card-main">
+                    <div class="vital-card-header">
+                      <div class="vital-title-group">
+                        <span class="material-symbols-outlined icon temp-icon">thermostat</span>
+                        <span class="vital-title">Body Temperature</span>
+                      </div>
+                      <span class="status-badge badge-normal" id="badge-temp">Normal</span>
+                    </div>
+                    <div class="vital-card-body">
+                      <span class="vital-value" id="val-temp">36.8</span>
+                      <span class="vital-unit">°C</span>
+                    </div>
+                    <div class="vital-card-footer">
+                      <span class="vital-sparkline-placeholder">
+                        <canvas id="sparkline-temp" width="90" height="20"></canvas>
+                      </span>
+                      <span class="timestamp" id="ts-temp">Synced: Just now</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 4: Blood Oxygen (SpO2) -->
+                <div class="vital-card spo2-card normal-state" id="card-spo2">
+                  <div class="vital-card-accent"></div>
+                  <div class="vital-card-main">
+                    <div class="vital-card-header">
+                      <div class="vital-title-group">
+                        <span class="material-symbols-outlined icon spo2-icon">air</span>
+                        <span class="vital-title">Blood Oxygen (SpO2)</span>
+                      </div>
+                      <span class="status-badge badge-normal" id="badge-spo2">Normal</span>
+                    </div>
+                    <div class="vital-card-body">
+                      <span class="vital-value" id="val-spo2">98</span>
+                      <span class="vital-unit">%</span>
+                    </div>
+                    <div class="vital-card-footer">
+                      <span class="vital-sparkline-placeholder">
+                        <canvas id="sparkline-spo2" width="90" height="20"></canvas>
+                      </span>
+                      <span class="timestamp" id="ts-spo2">Synced: Just now</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. REPORT SCREEN (Trends & Warnings) -->
+          <section id="report-view" class="sub-view">
+            <div class="report-container">
+              
+              <!-- Report Sub-Navigation -->
+              <div class="report-tabs">
+                <button class="report-tab-btn active" id="tab-trends">Trend Charts</button>
+                <button class="report-tab-btn" id="tab-alerts">
+                  <span>Alerts Log</span>
+                  <span class="report-alert-badge" id="report-badge-count" style="display: none;">0</span>
+                </button>
+              </div>
+
+              <!-- Content Scroll -->
+              <div class="report-content-scroll">
+                
+                <!-- Tab Pane A: Trends -->
+                <div id="pane-trends" class="report-pane active">
+                  <div class="pane-header-filters">
+                    <h5>Historical Trends</h5>
+                    <div class="range-selector">
+                      <button class="range-btn active" data-range="today">Today</button>
+                      <button class="range-btn" data-range="week">Week</button>
+                      <button class="range-btn" data-range="month">Month</button>
+                    </div>
+                  </div>
+
+                  <!-- Charts List -->
+                  <div class="charts-stack">
+                    <div class="chart-card">
+                      <h6>Heart Rate Trend (BPM)</h6>
+                      <div class="chart-canvas-container">
+                        <canvas id="chart-heart-rate"></canvas>
+                      </div>
+                    </div>
+                    <div class="chart-card">
+                      <h6>Blood Pressure Trend (mmHg)</h6>
+                      <div class="chart-canvas-container">
+                        <canvas id="chart-blood-pressure"></canvas>
+                      </div>
+                    </div>
+                    <div class="chart-card">
+                      <h6>Body Temperature Trend (°C)</h6>
+                      <div class="chart-canvas-container">
+                        <canvas id="chart-temp-trend"></canvas>
+                      </div>
+                    </div>
+                    <div class="chart-card">
+                      <h6>Blood Oxygen Trend (SpO2 %)</h6>
+                      <div class="chart-canvas-container">
+                        <canvas id="chart-spo2-trend"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tab Pane B: Alerts Log -->
+                <div id="pane-alerts" class="report-pane">
+                  <div class="alerts-pane-header">
+                    <h5>Registered Alerts</h5>
+                    <button class="btn-clear-all-alerts" id="clear-all-alerts">Clear All</button>
+                  </div>
+                  
+                  <div class="alerts-log-list" id="alerts-log-list">
+                    <!-- Empty State Placeholder -->
+                    <div class="alerts-empty-container" id="alerts-empty-state">
+                      <div class="empty-bell-icon">
+                        <span class="material-symbols-outlined">notifications_off</span>
+                      </div>
+                      <h6>All readings normal</h6>
+                      <p>No out-of-range sensor alerts detected in the last 24 hours.</p>
+                    </div>
+                    <!-- Dynamic Alert Cards will go here -->
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. SETTINGS / PROFILE SCREEN -->
+          <section id="settings-view" class="sub-view">
+            <div class="settings-scroll">
+              
+              <!-- Patient Info Header -->
+              <div class="settings-profile-header">
+                <div class="large-profile-avatar">
+                  <span class="material-symbols-outlined">person</span>
+                </div>
+                <h4>Alexander Pierce</h4>
+                <p class="patient-id-badge">Patient ID: PATIENT-101</p>
+              </div>
+
+              <!-- Labeled Field Sections -->
+              <div class="settings-group">
+                <h5 class="settings-group-title">Personal Records</h5>
+                <div class="settings-cards-list">
+                  <div class="settings-item-card">
+                    <span class="material-symbols-outlined settings-icon">calendar_today</span>
+                    <div class="settings-item-meta">
+                      <label>Age</label>
+                      <span>42 years</span>
+                    </div>
+                  </div>
+                  <div class="settings-item-card">
+                    <span class="material-symbols-outlined settings-icon">wc</span>
+                    <div class="settings-item-meta">
+                      <label>Gender</label>
+                      <span>Male</span>
+                    </div>
+                  </div>
+                  <div class="settings-item-card">
+                    <span class="material-symbols-outlined settings-icon">bloodtype</span>
+                    <div class="settings-item-meta">
+                      <label>Blood Group</label>
+                      <span>O Positive (O+)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <h5 class="settings-group-title">Contact Information</h5>
+                <div class="settings-cards-list">
+                  <div class="settings-item-card">
+                    <span class="material-symbols-outlined settings-icon">phone</span>
+                    <div class="settings-item-meta">
+                      <label>Contact Number</label>
+                      <span>+1 (555) 902-3482</span>
+                    </div>
+                  </div>
+                  <div class="settings-item-card">
+                    <span class="material-symbols-outlined settings-icon">mail</span>
+                    <div class="settings-item-meta">
+                      <label>Email Address</label>
+                      <span>alexander.pierce@healthmail.com</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <h5 class="settings-group-title">Device & Gateway Information</h5>
+                <div class="settings-cards-list">
+                  <div class="settings-item-card">
+                    <span class="material-symbols-outlined settings-icon">router</span>
+                    <div class="settings-item-meta">
+                      <label>Gateway Status</label>
+                      <span>MediLink Gateway H4 (Online)</span>
+                    </div>
+                  </div>
+                  <div class="settings-item-card btn-manage-devices" id="btn-manage-devices">
+                    <span class="material-symbols-outlined settings-icon">bluetooth_searching</span>
+                    <div class="settings-item-meta">
+                      <label>Manage Devices</label>
+                      <span>Pair and provision IoT hardware</span>
+                    </div>
+                    <span class="material-symbols-outlined chevron">chevron_right</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <h5 class="settings-group-title">App Preferences</h5>
+                <div class="settings-cards-list">
+                  <div class="settings-item-card toggle-card">
+                    <span class="material-symbols-outlined settings-icon">battery_charging_full</span>
+                    <div class="settings-item-meta">
+                      <label>Show Device Battery</label>
+                      <span>Display IoT battery in header</span>
+                    </div>
+                    <label class="switch-toggle">
+                      <input type="checkbox" id="toggle-battery-show" checked>
+                      <span class="slider-toggle"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-disclaimer">
+                <span class="material-symbols-outlined">lock</span>
+                <p>This Patient Dashboard is strictly read-only. Device management, health records, or notification settings cannot be edited from this portal.</p>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- 5. DAILY ACTIVITY SCREEN -->
+          <section id="activity-view" class="sub-view">
+            <div class="activity-scroll">
+              
+              <div class="activity-header">
+                <div class="activity-title-row">
+                  <span class="material-symbols-outlined">arrow_back_ios</span>
+                  <h3>Daily activity</h3>
+                  <div class="activity-header-icons">
+                    <span class="material-symbols-outlined">share</span>
+                    <span class="material-symbols-outlined">calendar_today</span>
+                    <span class="material-symbols-outlined">more_vert</span>
+                  </div>
+                </div>
+                
+                <div class="activity-calendar" id="activity-calendar">
+                  <!-- JS will generate calendar days here -->
+                </div>
+              </div>
+
+              <!-- Main Rings Card -->
+              <div class="activity-rings-card">
+                <div class="activity-rings-container">
+                  <svg class="activity-rings-svg" viewBox="0 0 200 200">
+                    <!-- Steps Ring (Green) -->
+                    <circle class="ring-bg" cx="100" cy="100" r="80" stroke="#2ecc7133"></circle>
+                    <circle class="ring-progress ring-steps" cx="100" cy="100" r="80" stroke="#2ecc71" id="ring-steps-path"></circle>
+                    
+                    <!-- Time Ring (Blue) -->
+                    <circle class="ring-bg" cx="100" cy="100" r="60" stroke="#3498db33"></circle>
+                    <circle class="ring-progress ring-time" cx="100" cy="100" r="60" stroke="#3498db" id="ring-time-path"></circle>
+                    
+                    <!-- Calories Ring (Pink) -->
+                    <circle class="ring-bg" cx="100" cy="100" r="40" stroke="#ff475733"></circle>
+                    <circle class="ring-progress ring-cal" cx="100" cy="100" r="40" stroke="#ff4757" id="ring-cal-path"></circle>
+                  </svg>
+                </div>
+                
+                <div class="activity-metrics-grid">
+                  <div class="activity-metric">
+                    <span class="metric-label">Steps</span>
+                    <div class="metric-value-row">
+                      <span class="material-symbols-outlined icon-green">directions_run</span>
+                      <span class="metric-value" id="act-steps-val">8,105</span>
+                    </div>
+                    <span class="metric-goal">/6,000</span>
+                  </div>
+                  
+                  <div class="activity-metric">
+                    <span class="metric-label">Active time</span>
+                    <div class="metric-value-row">
+                      <span class="material-symbols-outlined icon-blue">schedule</span>
+                      <span class="metric-value" id="act-time-val">85</span>
+                    </div>
+                    <span class="metric-goal">/90 mins</span>
+                  </div>
+                  
+                  <div class="activity-metric">
+                    <span class="metric-label">Activity calories</span>
+                    <div class="metric-value-row">
+                      <span class="material-symbols-outlined icon-pink">local_fire_department</span>
+                      <span class="metric-value" id="act-cal-val">299</span>
+                    </div>
+                    <span class="metric-goal">/500 kcal</span>
+                  </div>
+                </div>
+
+                <div class="activity-extra-stats">
+                  <div class="extra-stat-row">
+                    <span class="extra-stat-label">Total burnt calories</span>
+                    <span class="extra-stat-dots"></span>
+                    <span class="extra-stat-value"><strong id="act-total-cal">1,873</strong> kcal</span>
+                  </div>
+                  <div class="extra-stat-row">
+                    <span class="extra-stat-label">Distance while active</span>
+                    <span class="extra-stat-dots"></span>
+                    <span class="extra-stat-value"><strong id="act-dist">6.49</strong> km</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Steps Chart Card -->
+              <div class="activity-chart-card">
+                <h4>Steps</h4>
+                <div class="activity-chart-container">
+                  <canvas id="chart-activity-steps"></canvas>
+                </div>
+                <div class="activity-chart-footer">
+                  <h4>Active time</h4>
+                </div>
+              </div>
+
+            </div>
+          </section>
+          
+          <!-- 6. DEVICE SETUP MODAL -->
+          <div id="device-setup-modal" class="fullscreen-modal">
+            <div class="modal-header">
+              <span class="material-symbols-outlined close-modal" id="close-setup-modal">close</span>
+              <h3>Device Setup</h3>
+              <span></span>
+            </div>
+            
+            <div class="modal-content">
+              <!-- Step 1: Bluetooth -->
+              <div class="setup-step" id="setup-step-1">
+                <div class="step-icon">
+                  <span class="material-symbols-outlined">bluetooth</span>
+                </div>
+                <h2>Pair Device</h2>
+                <p>Connect your phone to the Health Monitor hardware via Bluetooth.</p>
+                <div class="device-status-text" id="bt-status-text">Not Connected</div>
+                <button class="btn btn-primary" id="btn-connect-bt">Connect Bluetooth</button>
+              </div>
+
+              <!-- Step 2: Wi-Fi Provisioning -->
+              <div class="setup-step hidden" id="setup-step-2">
+                <div class="step-icon">
+                  <span class="material-symbols-outlined">wifi</span>
+                </div>
+                <h2>Provision Wi-Fi</h2>
+                <p>Send network credentials to the device so it can connect to the cloud.</p>
+                
+                <div class="wifi-form">
+                  <div class="form-group">
+                    <label>Network Name (SSID)</label>
+                    <input type="text" id="wifi-ssid" placeholder="e.g. Home_Network_5G">
+                  </div>
+                  <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="wifi-pass" placeholder="••••••••">
+                  </div>
+                  <button class="btn btn-primary" id="btn-provision-wifi">Provision Device</button>
+                </div>
+                
+                <div class="provision-status" id="provision-status"></div>
+              </div>
+            </div>
+          </div>
+
+        </main>
+
+        <!-- Bottom Navigation Bar (MD3 style) -->
+        <nav class="app-nav-md3">
+          <button class="nav-item-btn active" data-tab="dashboard-view" aria-label="Home">
+            <span class="material-symbols-outlined icon">home</span>
+            <span class="nav-btn-label">Home</span>
+          </button>
+          <button class="nav-item-btn" data-tab="report-view" aria-label="Report">
+            <span class="material-symbols-outlined icon">description</span>
+            <span class="nav-btn-label">Report</span>
+            <span class="nav-tab-badge" id="nav-report-badge" style="display: none;">0</span>
+          </button>
+          <button class="nav-item-btn" data-tab="activity-view" aria-label="Activity">
+            <span class="material-symbols-outlined icon">directions_run</span>
+            <span class="nav-btn-label">Activity</span>
+          </button>
+          <button class="nav-item-btn" data-tab="settings-view" aria-label="Settings">
+            <span class="material-symbols-outlined icon">settings</span>
+            <span class="nav-btn-label">Settings</span>
+          </button>
+        </nav>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
