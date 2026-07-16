@@ -37,38 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-  // Battery Level & Display Settings
-  let deviceBattery = 85;
-  let showBatteryHeader = true;
 
-  function updateBatteryUI(percent) {
-    const valSpan = document.getElementById('device-battery-val');
-    const fillBar = document.getElementById('battery-fill-bar');
-    if (valSpan) valSpan.textContent = `${percent}%`;
-    if (fillBar) {
-      fillBar.style.height = `${percent}%`;
-      fillBar.classList.remove('low', 'medium');
-      if (percent <= 20) {
-        fillBar.classList.add('low');
-      } else if (percent <= 50) {
-        fillBar.classList.add('medium');
-      }
-    }
-  }
-
-  // Bind Battery Visibility Toggle in Settings
-  const batteryToggle = document.getElementById('toggle-battery-show');
-  const batteryHeaderContainer = document.getElementById('header-device-battery');
-  
-  if (batteryToggle && batteryHeaderContainer) {
-    batteryToggle.addEventListener('change', (e) => {
-      showBatteryHeader = e.target.checked;
-      batteryHeaderContainer.style.display = showBatteryHeader ? 'flex' : 'none';
-    });
-  }
-
-  // Initialize initial battery display
-  updateBatteryUI(deviceBattery);
 
   // ==========================================================================
   // VIEW NAVIGATION & ROUTING
@@ -148,16 +117,129 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAlertsList();
   });
 
-  // Splash Screen Transition
-  setTimeout(() => {
+  // ==========================================================================
+  // AUTH & LOGIN
+  // ==========================================================================
+
+  const DEMO_ACCOUNTS = {
+    patient_demo: {
+      password: 'demo1234',
+      name: 'John Doe',
+      id: 'PATIENT-001',
+      role: 'patient',
+      email: 'john.doe@medsentry.io'
+    },
+    guardian_demo: {
+      password: 'demo1234',
+      name: 'Jane Doe',
+      id: 'GUARDIAN-001',
+      role: 'guardian',
+      email: 'jane.doe@medsentry.io'
+    },
+    clinician_demo: {
+      password: 'demo1234',
+      name: 'Dr. Sarah Chen',
+      id: 'CLINICIAN-001',
+      role: 'clinician',
+      email: 'sarah.chen@medsentry.io'
+    }
+  };
+
+  function doLogin(username, password) {
+    const account = DEMO_ACCOUNTS[username.trim().toLowerCase()];
+    if (!account || account.password !== password) {
+      return false;
+    }
+    // Store session
+    state.user.name = account.name;
+    state.user.id = account.id;
+    state.user.email = account.email;
+    state.user.role = account.role;
+    sessionStorage.setItem('ms_auth', JSON.stringify({ username, role: account.role }));
+    return true;
+  }
+
+  function launchApp() {
     showView('main-app');
     showSubView('dashboard-view');
-    
-    // Initialize background systems
     initializeSimulator();
     seedHistoricalData();
     updateVitals();
+
+    // Update header name if elements exist
+    const nameEl = document.getElementById('header-patient-name');
+    if (nameEl) nameEl.textContent = state.user.name;
+  }
+
+  function showLoginError(msg) {
+    let errEl = document.getElementById('login-error-msg');
+    if (!errEl) {
+      errEl = document.createElement('p');
+      errEl.id = 'login-error-msg';
+      errEl.className = 'login-error';
+      const submitBtn = document.getElementById('btn-login-submit');
+      submitBtn.parentNode.insertBefore(errEl, submitBtn.nextSibling);
+    }
+    errEl.textContent = msg;
+    errEl.classList.remove('visible');
+    // Force reflow for shake animation replay
+    void errEl.offsetWidth;
+    errEl.classList.add('visible');
+  }
+
+  // Splash → Login transition
+  setTimeout(() => {
+    showView('login-screen');
   }, 2500);
+
+  // Sign-In button
+  const loginSubmitBtn = document.getElementById('btn-login-submit');
+  if (loginSubmitBtn) {
+    loginSubmitBtn.addEventListener('click', () => {
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+
+      if (!username || !password) {
+        showLoginError('Please enter your username and password.');
+        return;
+      }
+
+      loginSubmitBtn.classList.add('loading');
+      loginSubmitBtn.textContent = 'Signing in…';
+
+      setTimeout(() => {
+        if (doLogin(username, password)) {
+          launchApp();
+        } else {
+          loginSubmitBtn.classList.remove('loading');
+          loginSubmitBtn.textContent = 'Sign In';
+          showLoginError('Invalid username or password. Try a demo account below.');
+          document.getElementById('login-password').value = '';
+        }
+      }, 700);
+    });
+
+    // Allow Enter key in password field
+    document.getElementById('login-password').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') loginSubmitBtn.click();
+    });
+    document.getElementById('login-username').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('login-password').focus();
+    });
+  }
+
+  // Demo Account quick-login cards
+  document.querySelectorAll('.demo-account-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const username = card.getAttribute('data-username');
+      document.getElementById('login-username').value = username;
+      document.getElementById('login-password').value = 'demo1234';
+      // Small delay then auto-submit
+      setTimeout(() => document.getElementById('btn-login-submit').click(), 200);
+    });
+  });
+
+
 
   // ==========================================================================
   // REAL-TIME VITAL SIMULATOR (IoT Sensor Readings)
@@ -261,11 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rawReadings = vitalSimulator.generate(state.vitalCondition);
     state.currentVitals = rawReadings;
 
-    // Slowly fluctuate battery level (simulate IoT battery depletion over time)
-    if (Math.random() > 0.85 && deviceBattery > 10) {
-      deviceBattery -= 1;
-      updateBatteryUI(deviceBattery);
-    }
+
 
     // Push into the front of our history list log
     state.history.unshift({
@@ -491,11 +569,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const newAlert = {
       id: 'alert-' + Date.now(),
+      patientId: state.user.id,
       param,
       message,
       severity,
       timestamp,
-      timeRaw: Date.now()
+      timeRaw: Date.now(),
+      readingValue: message.match(/[\d.]+/)?.[0] || '',
+      resolved: false
     };
 
     state.alerts.unshift(newAlert);
@@ -511,6 +592,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Render alert view container if active
     if (state.currentTab === 'report-view' && document.getElementById('tab-alerts').classList.contains('active')) {
       renderAlertsList();
+    }
+
+    // Update SOS critical alerts feed if SOS tab is active
+    if (state.currentTab === 'sos-view') {
+      renderSOSCriticalAlerts();
     }
   }
 
@@ -1163,6 +1249,206 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2500);
         
       }, 2000);
+    });
+  }
+  // ==========================================================================
+  // EMERGENCY SOS SYSTEM
+  // ==========================================================================
+
+  let sosHoldTimer = null;
+  let sosIsActive = false;
+  let sosTimelineInterval = null;
+
+  const btnSosTrigger = document.getElementById('btn-sos-trigger');
+  const sosTriggerArea = document.getElementById('sos-trigger-area');
+  const sosActiveState = document.getElementById('sos-active-state');
+  const btnCancelSos = document.getElementById('btn-cancel-sos');
+  const sosTimeline = document.getElementById('sos-timeline');
+
+  // SOS Hold-to-Trigger (3 seconds)
+  if (btnSosTrigger) {
+    const startHold = () => {
+      if (sosIsActive) return;
+      btnSosTrigger.classList.add('holding');
+      document.querySelector('.sos-btn-label').textContent = 'HOLD...';
+
+      sosHoldTimer = setTimeout(() => {
+        activateSOS();
+      }, 3000);
+    };
+
+    const cancelHold = () => {
+      clearTimeout(sosHoldTimer);
+      btnSosTrigger.classList.remove('holding');
+      if (!sosIsActive) {
+        document.querySelector('.sos-btn-label').textContent = 'HOLD FOR SOS';
+      }
+    };
+
+    // Mouse events
+    btnSosTrigger.addEventListener('mousedown', startHold);
+    btnSosTrigger.addEventListener('mouseup', cancelHold);
+    btnSosTrigger.addEventListener('mouseleave', cancelHold);
+
+    // Touch events for mobile
+    btnSosTrigger.addEventListener('touchstart', (e) => { e.preventDefault(); startHold(); });
+    btnSosTrigger.addEventListener('touchend', cancelHold);
+    btnSosTrigger.addEventListener('touchcancel', cancelHold);
+  }
+
+  function activateSOS() {
+    sosIsActive = true;
+
+    // Hide trigger, show active state
+    if (sosTriggerArea) sosTriggerArea.style.display = 'none';
+    if (sosActiveState) sosActiveState.style.display = 'flex';
+
+    // Add SOS alert to the alerts system
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    addAlert('Emergency SOS', `SOS triggered by patient ${state.user.name} (${state.user.id}). Vitals: HR ${state.currentVitals.heartRate} BPM, SpO2 ${state.currentVitals.spo2}%, Temp ${state.currentVitals.temperature.toFixed(1)}°C`, 'Critical', timeStr);
+
+    // Animate timeline steps
+    const steps = [
+      { icon: 'notifications_active', title: 'Push Notification Sent', desc: 'Guardian app alerted with current vitals', delay: 800 },
+      { icon: 'sms', title: 'Twilio SMS Dispatched', desc: 'Emergency SMS sent to Sarah Pierce & Dr. Vance', delay: 2200 },
+      { icon: 'call', title: 'Voice Call Initiated', desc: 'Automated call to primary guardian via Twilio', delay: 4000 },
+      { icon: 'vital_signs', title: 'Vitals Snapshot Transmitted', desc: `HR: ${state.currentVitals.heartRate} BPM · SpO2: ${state.currentVitals.spo2}% · Temp: ${state.currentVitals.temperature.toFixed(1)}°C`, delay: 5500 }
+    ];
+
+    // Build timeline HTML
+    sosTimeline.innerHTML = steps.map((step, idx) => `
+      <div class="sos-timeline-step" id="sos-step-${idx}">
+        <div class="sos-timeline-dot">
+          <span class="material-symbols-outlined" style="font-size: 0.85rem;">${step.icon}</span>
+        </div>
+        <div class="sos-timeline-text">
+          <strong>${step.title}</strong>
+          <span>${step.desc}</span>
+        </div>
+      </div>
+    `).join('');
+
+    // Animate each step sequentially
+    steps.forEach((step, idx) => {
+      // Set as "active" first, then "completed"
+      setTimeout(() => {
+        const el = document.getElementById(`sos-step-${idx}`);
+        if (el) el.classList.add('active');
+      }, step.delay - 500);
+
+      setTimeout(() => {
+        const el = document.getElementById(`sos-step-${idx}`);
+        if (el) {
+          el.classList.remove('active');
+          el.classList.add('completed');
+        }
+        // Update active message
+        const msg = document.getElementById('sos-active-msg');
+        if (msg) msg.textContent = step.title + ' ✓';
+      }, step.delay);
+    });
+
+    // After all steps complete, show final status
+    setTimeout(() => {
+      const msg = document.getElementById('sos-active-msg');
+      if (msg) msg.textContent = 'All emergency protocols executed. Awaiting response...';
+    }, 6500);
+  }
+
+  function cancelSOS() {
+    sosIsActive = false;
+    clearInterval(sosTimelineInterval);
+
+    // Show trigger, hide active state
+    if (sosTriggerArea) sosTriggerArea.style.display = 'flex';
+    if (sosActiveState) sosActiveState.style.display = 'none';
+
+    // Reset button
+    const label = document.querySelector('.sos-btn-label');
+    if (label) label.textContent = 'HOLD FOR SOS';
+    btnSosTrigger.classList.remove('holding');
+
+    // Add cancellation alert
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    addAlert('Emergency SOS', `SOS alert cancelled by patient ${state.user.name}`, 'Warning', timeStr);
+  }
+
+  if (btnCancelSos) {
+    btnCancelSos.addEventListener('click', cancelSOS);
+  }
+
+  // Render critical alerts in SOS page
+  function renderSOSCriticalAlerts() {
+    const list = document.getElementById('sos-critical-list');
+    const empty = document.getElementById('sos-no-critical');
+    if (!list) return;
+
+    // Remove existing dynamic cards
+    list.querySelectorAll('.sos-critical-card').forEach(c => c.remove());
+
+    const criticalAlerts = state.alerts.filter(a => a.severity === 'Critical');
+
+    if (criticalAlerts.length === 0) {
+      if (empty) empty.style.display = 'flex';
+      return;
+    }
+
+    if (empty) empty.style.display = 'none';
+
+    criticalAlerts.slice(0, 8).forEach(alert => {
+      const card = document.createElement('div');
+      card.className = 'sos-critical-card';
+      card.innerHTML = `
+        <span class="material-symbols-outlined sos-critical-icon">emergency_home</span>
+        <div class="sos-critical-content">
+          <strong>${alert.message}</strong>
+          <span>Patient: ${alert.patientId || state.user.id} · ${alert.timestamp}</span>
+        </div>
+        <span class="sos-critical-badge ${alert.resolved ? 'resolved' : ''}">
+          ${alert.resolved ? 'Resolved' : 'Active'}
+        </span>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  // Update SOS view when navigating to it
+  const origShowSubView = showSubView;
+  // We can't easily override, so let's hook into nav clicks
+  document.querySelectorAll('.nav-item-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const tabTarget = button.getAttribute('data-tab');
+      if (tabTarget === 'sos-view') {
+        setTimeout(renderSOSCriticalAlerts, 50);
+      }
+    });
+  });
+
+  // SOS Call Buttons
+  document.querySelectorAll('.sos-call-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const phone = btn.getAttribute('data-phone');
+      if (phone) {
+        window.open(`tel:${phone}`, '_self');
+      }
+    });
+  });
+
+  // ---- Logout ----
+  const logoutBtn = document.getElementById('btn-logout');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      sessionStorage.removeItem('ms_auth');
+      // Reset login form
+      const unEl = document.getElementById('login-username');
+      const pwEl = document.getElementById('login-password');
+      const errEl = document.getElementById('login-error-msg');
+      const submitBtn = document.getElementById('btn-login-submit');
+      if (unEl) unEl.value = '';
+      if (pwEl) pwEl.value = '';
+      if (errEl) errEl.classList.remove('visible');
+      if (submitBtn) { submitBtn.textContent = 'Sign In'; submitBtn.classList.remove('loading'); }
+      showView('login-screen');
     });
   }
 

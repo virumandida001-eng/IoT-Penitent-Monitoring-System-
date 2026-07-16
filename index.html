@@ -9,8 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Material Symbols Outlined -->
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <!-- Material Symbols Outlined loaded locally in app.css -->
   <!-- Local Chart.js -->
   <script src="chart.js"></script>
   <!-- Custom Styling -->
@@ -37,6 +36,78 @@
         </div>
       </div>
 
+      <!-- 1.5. LOGIN SCREEN -->
+      <div id="login-screen" class="view">
+        <div class="login-content">
+          <div class="login-header">
+            <div class="login-logo">
+              <span class="material-symbols-outlined logo-icon">shield_heart</span>
+            </div>
+            <h1 class="login-title">MedSentry Portal</h1>
+            <p class="login-subtitle">IoT Patient Health Monitoring</p>
+          </div>
+          
+          <div class="login-form">
+            <div class="form-group-login">
+              <label class="login-label">Username</label>
+              <div class="input-with-icon">
+                <span class="material-symbols-outlined input-icon">person</span>
+                <input type="text" id="login-username" class="login-input" placeholder="e.g. patient_demo">
+              </div>
+            </div>
+            
+            <div class="form-group-login">
+              <label class="login-label">Password</label>
+              <div class="input-with-icon">
+                <span class="material-symbols-outlined input-icon">lock</span>
+                <input type="password" id="login-password" class="login-input" placeholder="••••••••">
+              </div>
+            </div>
+            
+            <button class="btn-login-submit" id="btn-login-submit">Sign In</button>
+          </div>
+
+          <div class="demo-login-section">
+            <div class="demo-login-divider">
+              <span>Or sign in with Demo Account</span>
+            </div>
+            
+            <div class="demo-account-cards">
+              <div class="demo-account-card" data-username="patient_demo">
+                <div class="demo-account-icon patient">
+                  <span class="material-symbols-outlined">patient_list</span>
+                </div>
+                <div class="demo-account-info">
+                  <strong>Patient Demo</strong>
+                  <span>John Doe (Patient)</span>
+                </div>
+              </div>
+
+              <div class="demo-account-card" data-username="guardian_demo">
+                <div class="demo-account-icon guardian">
+                  <span class="material-symbols-outlined">shield_person</span>
+                </div>
+                <div class="demo-account-info">
+                  <strong>Guardian Demo</strong>
+                  <span>Jane Doe (Guardian)</span>
+                </div>
+              </div>
+
+              <div class="demo-account-card" data-username="clinician_demo">
+                <div class="demo-account-icon clinician">
+                  <span class="material-symbols-outlined">medical_services</span>
+                </div>
+                <div class="demo-account-info">
+                  <strong>Clinician Demo</strong>
+                  <span>Dr. Chen (Cardiology)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
       <!-- MAIN APP CONTAINER (Tabs/Navigation) -->
       <div id="main-app" class="app-container">
         
@@ -46,23 +117,18 @@
             <span class="device-status-badge" id="header-bt-status">
               <span class="material-symbols-outlined bt-icon">bluetooth</span>
             </span>
-            <span class="device-battery" id="header-device-battery" style="display: flex;">
-              <span class="battery-icon-shape">
-                <span class="battery-body">
-                  <span class="battery-fill" id="battery-fill-bar" style="height: 85%;"></span>
-                </span>
-                <span class="battery-nub"></span>
-              </span>
-              <span id="device-battery-val">85%</span>
-            </span>
+
           </div>
           <div class="header-right">
             <div class="header-profile">
               <div class="avatar-circle">
                 <span class="material-symbols-outlined">person</span>
               </div>
-              <span class="patient-header-name">Alexander Pierce</span>
+              <span class="patient-header-name" id="header-patient-name">Alexander Pierce</span>
             </div>
+            <button class="btn-logout" id="btn-logout" title="Sign out">
+              <span class="material-symbols-outlined">logout</span>
+            </button>
           </div>
         </header>
 
@@ -360,22 +426,7 @@
                 </div>
               </div>
 
-              <div class="settings-group">
-                <h5 class="settings-group-title">App Preferences</h5>
-                <div class="settings-cards-list">
-                  <div class="settings-item-card toggle-card">
-                    <span class="material-symbols-outlined settings-icon">battery_charging_full</span>
-                    <div class="settings-item-meta">
-                      <label>Show Device Battery</label>
-                      <span>Display IoT battery in header</span>
-                    </div>
-                    <label class="switch-toggle">
-                      <input type="checkbox" id="toggle-battery-show" checked>
-                      <span class="slider-toggle"></span>
-                    </label>
-                  </div>
-                </div>
-              </div>
+
 
               <div class="settings-disclaimer">
                 <span class="material-symbols-outlined">lock</span>
@@ -480,7 +531,115 @@
             </div>
           </section>
           
-          <!-- 6. DEVICE SETUP MODAL -->
+          <!-- 6. EMERGENCY SOS SCREEN -->
+          <section id="sos-view" class="sub-view">
+            <div class="sos-scroll">
+
+              <!-- SOS Header -->
+              <div class="sos-header-section">
+                <span class="material-symbols-outlined sos-header-icon">emergency</span>
+                <h2 class="sos-title">Emergency SOS</h2>
+                <p class="sos-subtitle">Trigger an emergency workflow to alert your care team, emergency contacts, and local services.</p>
+              </div>
+
+              <!-- SOS Trigger Button -->
+              <div class="sos-trigger-area" id="sos-trigger-area">
+                <button class="sos-btn" id="btn-sos-trigger" aria-label="Trigger Emergency SOS">
+                  <span class="sos-btn-pulse-ring"></span>
+                  <span class="sos-btn-pulse-ring ring-2"></span>
+                  <span class="sos-btn-inner">
+                    <span class="material-symbols-outlined sos-btn-icon">sos</span>
+                    <span class="sos-btn-label">HOLD FOR SOS</span>
+                  </span>
+                </button>
+                <p class="sos-tap-hint">Press and hold for 3 seconds to activate</p>
+              </div>
+
+              <!-- SOS ACTIVE STATE (hidden by default) -->
+              <div class="sos-active-state" id="sos-active-state" style="display: none;">
+                <div class="sos-active-banner">
+                  <div class="sos-active-pulse"></div>
+                  <div class="sos-active-info">
+                    <h3>🚨 SOS ACTIVATED</h3>
+                    <p id="sos-active-msg">Alerting emergency contacts & care team...</p>
+                  </div>
+                </div>
+                <div class="sos-active-timeline" id="sos-timeline">
+                  <!-- Dynamic steps injected by JS -->
+                </div>
+                <button class="btn btn-cancel-sos" id="btn-cancel-sos">Cancel SOS Alert</button>
+              </div>
+
+              <!-- Emergency Contacts -->
+              <div class="sos-contacts-section">
+                <h5 class="sos-section-title">
+                  <span class="material-symbols-outlined">contacts_phone</span>
+                  Emergency Contacts
+                </h5>
+                <div class="sos-contacts-list">
+                  <div class="sos-contact-card">
+                    <div class="sos-contact-avatar doctor">
+                      <span class="material-symbols-outlined">medical_services</span>
+                    </div>
+                    <div class="sos-contact-info">
+                      <strong>Dr. Elizabeth Vance</strong>
+                      <span>Primary Cardiologist</span>
+                    </div>
+                    <button class="sos-call-btn" data-phone="+15550199" aria-label="Call doctor">
+                      <span class="material-symbols-outlined">call</span>
+                    </button>
+                  </div>
+                  <div class="sos-contact-card">
+                    <div class="sos-contact-avatar guardian">
+                      <span class="material-symbols-outlined">shield_person</span>
+                    </div>
+                    <div class="sos-contact-info">
+                      <strong>Sarah Pierce</strong>
+                      <span>Primary Guardian</span>
+                    </div>
+                    <button class="sos-call-btn" data-phone="+15550143" aria-label="Call guardian">
+                      <span class="material-symbols-outlined">call</span>
+                    </button>
+                  </div>
+                  <div class="sos-contact-card">
+                    <div class="sos-contact-avatar emergency">
+                      <span class="material-symbols-outlined">local_hospital</span>
+                    </div>
+                    <div class="sos-contact-info">
+                      <strong>City Ambulance Dispatch</strong>
+                      <span>Emergency Services — 911</span>
+                    </div>
+                    <button class="sos-call-btn emergency-call" data-phone="911" aria-label="Call 911">
+                      <span class="material-symbols-outlined">call</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Critical Alerts -->
+              <div class="sos-critical-alerts-section">
+                <h5 class="sos-section-title">
+                  <span class="material-symbols-outlined">crisis_alert</span>
+                  Recent Critical Alerts
+                </h5>
+                <div class="sos-critical-list" id="sos-critical-list">
+                  <div class="sos-no-critical" id="sos-no-critical">
+                    <span class="material-symbols-outlined">verified_user</span>
+                    <p>No critical alerts detected.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SOS Info Footer -->
+              <div class="sos-info-footer">
+                <span class="material-symbols-outlined">info</span>
+                <p>When SOS is activated, the system will: send push notifications to all linked guardians, initiate a Twilio SMS & voice call escalation, and transmit current vitals snapshot to the care team.</p>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- 7. DEVICE SETUP MODAL -->
           <div id="device-setup-modal" class="fullscreen-modal">
             <div class="modal-header">
               <span class="material-symbols-outlined close-modal" id="close-setup-modal">close</span>
@@ -541,6 +700,10 @@
           <button class="nav-item-btn" data-tab="activity-view" aria-label="Activity">
             <span class="material-symbols-outlined icon">directions_run</span>
             <span class="nav-btn-label">Activity</span>
+          </button>
+          <button class="nav-item-btn nav-sos-btn" data-tab="sos-view" aria-label="SOS">
+            <span class="material-symbols-outlined icon">emergency</span>
+            <span class="nav-btn-label">SOS</span>
           </button>
           <button class="nav-item-btn" data-tab="settings-view" aria-label="Settings">
             <span class="material-symbols-outlined icon">settings</span>
