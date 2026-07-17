@@ -50,6 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (targetView) {
       targetView.classList.add('active');
     }
+    
+    // Hide main app when showing login/splash screens
+    const mainApp = document.getElementById('main-app');
+    if (viewId === 'login-screen' || viewId === 'splash-screen') {
+      mainApp.classList.remove('active');
+    }
   }
 
   function showSubView(subViewId) {
@@ -78,12 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (activeReportPane === 'pane-trends') {
         setTimeout(initializeOrUpdateCharts, 50); // Small timeout to ensure canvas is visible
       }
-    } else if (subViewId === 'activity-view') {
-      setTimeout(() => {
-        renderActivityCalendar();
-        updateActivityRings();
-        initActivityChart();
-      }, 50);
     }
   }
 
@@ -160,7 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function launchApp() {
-    showView('main-app');
+    // Hide all views (splash/login)
+    document.querySelectorAll('.view').forEach(view => {
+      view.classList.remove('active');
+    });
+    // Show main app container
+    const mainApp = document.getElementById('main-app');
+    mainApp.classList.add('active');
+    // Show dashboard sub-view
     showSubView('dashboard-view');
     initializeSimulator();
     seedHistoricalData();
@@ -187,10 +194,24 @@ document.addEventListener('DOMContentLoaded', () => {
     errEl.classList.add('visible');
   }
 
-  // Splash → Login transition
-  setTimeout(() => {
-    showView('login-screen');
-  }, 2500);
+  // Splash → Login transition (straight to login, no delay)
+  showView('login-screen');
+
+  // Password Toggle Button
+  const btnTogglePassword = document.getElementById('btn-toggle-password');
+  if (btnTogglePassword) {
+    btnTogglePassword.addEventListener('click', () => {
+      const passwordInput = document.getElementById('login-password');
+      const iconPasswordVisibility = document.getElementById('icon-password-visibility');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        iconPasswordVisibility.textContent = 'visibility';
+      } else {
+        passwordInput.type = 'password';
+        iconPasswordVisibility.textContent = 'visibility_off';
+      }
+    });
+  }
 
   // Sign-In button
   const loginSubmitBtn = document.getElementById('btn-login-submit');
@@ -200,23 +221,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('login-password').value;
 
       if (!username || !password) {
-        showLoginError('Please enter your username and password.');
+        showLoginError('Please enter your email and password.');
         return;
       }
 
       loginSubmitBtn.classList.add('loading');
-      loginSubmitBtn.textContent = 'Signing in…';
 
       setTimeout(() => {
         if (doLogin(username, password)) {
           launchApp();
         } else {
           loginSubmitBtn.classList.remove('loading');
-          loginSubmitBtn.textContent = 'Sign In';
-          showLoginError('Invalid username or password. Try a demo account below.');
+          showLoginError('Invalid email or password. Try a demo account below.');
           document.getElementById('login-password').value = '';
         }
-      }, 700);
+      }, 800);
     });
 
     // Allow Enter key in password field
@@ -238,6 +257,22 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => document.getElementById('btn-login-submit').click(), 200);
     });
   });
+
+  // Forgot password link
+  const forgotPassword = document.querySelector('.forgot-password');
+  if (forgotPassword) {
+    forgotPassword.addEventListener('click', () => {
+      alert('Forgot password page would open here in a real app!');
+    });
+  }
+
+  // Signup link
+  const signupSpan = document.querySelector('.signup-link span');
+  if (signupSpan) {
+    signupSpan.addEventListener('click', () => {
+      alert('Sign up page would open here in a real app!');
+    });
+  }
 
 
 
@@ -667,38 +702,38 @@ document.addEventListener('DOMContentLoaded', () => {
   // SEED & MANAGE HISTORICAL TRENDS DATA
   // ==========================================================================
   
-  function seedHistoricalData() {
-    state.history = [];
-    const now = new Date();
+  function getRandInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function getRandFloat(min, max) { return Math.round((Math.random() * (max - min) + min) * 10) / 10; }
 
-    const genSeedReading = (indexHoursAgo) => {
-      const time = new Date(now.getTime() - indexHoursAgo * 60 * 60 * 1000);
-      
-      // Inject some mock warning fluctuations in past records for visual interest
-      const isSpike = (indexHoursAgo === 4 || indexHoursAgo === 11);
-      if (isSpike) {
-        return {
-          heartRate: getRandInt(96, 108),
-          bpSys: getRandInt(131, 142),
-          bpDia: getRandInt(84, 91),
-          temperature: getRandFloat(37.4, 38.0),
-          spo2: getRandInt(91, 94),
-          timestamp: time
-        };
-      }
+function seedHistoricalData() {
+  state.history = [];
+  const now = new Date();
 
+  const genSeedReading = (indexHoursAgo) => {
+    const time = new Date(now.getTime() - indexHoursAgo * 60 * 60 * 1000);
+    
+    // Inject some mock warning fluctuations in past records for visual interest
+    const isSpike = (indexHoursAgo === 4 || indexHoursAgo === 11);
+    if (isSpike) {
       return {
-        heartRate: getRandInt(68, 86),
-        bpSys: getRandInt(112, 119),
-        bpDia: getRandInt(72, 79),
-        temperature: getRandFloat(36.4, 37.0),
-        spo2: getRandInt(96, 99),
+        heartRate: getRandInt(96, 108),
+        bpSys: getRandInt(131, 142),
+        bpDia: getRandInt(84, 91),
+        temperature: getRandFloat(37.4, 38.0),
+        spo2: getRandInt(91, 94),
         timestamp: time
       };
-    };
+    }
 
-    function getRandInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-    function getRandFloat(min, max) { return Math.round((Math.random() * (max - min) + min) * 10) / 10; }
+    return {
+      heartRate: getRandInt(68, 86),
+      bpSys: getRandInt(112, 119),
+      bpDia: getRandInt(72, 79),
+      temperature: getRandFloat(36.4, 37.0),
+      spo2: getRandInt(96, 99),
+      timestamp: time
+    };
+  };
 
     // Seed past 24 hourly logs
     for (let i = 24; i >= 0; i--) {
@@ -946,182 +981,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const ctx = document.getElementById('chart-spo2-trend').getContext('2d');
       state.charts.spo2 = new Chart(ctx, getChartConfig('Blood Oxygen', spo2Data, '#06b6d4', 80, 100, '%'));
     }
-  }
-
-  // ==========================================================================
-  // DAILY ACTIVITY SCREEN LOGIC
-  // ==========================================================================
-
-  const activityState = {
-    steps: 8105,
-    stepsGoal: 6000,
-    time: 85,
-    timeGoal: 90,
-    calories: 299,
-    caloriesGoal: 500,
-    chartInstance: null
-  };
-
-  function renderActivityCalendar() {
-    const calendarEl = document.getElementById('activity-calendar');
-    if (!calendarEl) return;
-    calendarEl.innerHTML = '';
-    
-    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-    const now = new Date();
-    const todayIndex = now.getDay();
-    const todayDate = now.getDate();
-    
-    for (let i = 0; i < 7; i++) {
-      // Calculate date for the day of this week
-      const dateOffset = i - todayIndex;
-      const d = new Date(now.getTime() + (dateOffset * 24 * 60 * 60 * 1000));
-      const dateNum = d.getDate();
-      
-      const isActive = i === todayIndex;
-      
-      // Mock random progress for previous days, empty for future
-      let pSteps = i < todayIndex ? (0.6 + Math.random() * 0.4) * 100 : (isActive ? (activityState.steps / activityState.stepsGoal) * 100 : 0);
-      let pTime = i < todayIndex ? (0.5 + Math.random() * 0.5) * 100 : (isActive ? (activityState.time / activityState.timeGoal) * 100 : 0);
-      let pCal = i < todayIndex ? (0.4 + Math.random() * 0.6) * 100 : (isActive ? (activityState.calories / activityState.caloriesGoal) * 100 : 0);
-
-      // SVG path length calculations
-      const rOuter = 10;
-      const cOuter = 2 * Math.PI * rOuter;
-      const oSteps = cOuter - (pSteps / 100) * cOuter;
-      
-      const rMid = 7;
-      const cMid = 2 * Math.PI * rMid;
-      const oTime = cMid - (pTime / 100) * cMid;
-      
-      const rInner = 4;
-      const cInner = 2 * Math.PI * rInner;
-      const oCal = cInner - (pCal / 100) * cInner;
-
-      const dayHtml = `
-        <div class="cal-day ${isActive ? 'active' : ''}">
-          <span class="day-label">${days[i]}</span>
-          <svg class="cal-ring-mini" viewBox="0 0 28 28">
-            <circle cx="14" cy="14" r="10" stroke="#2ecc7133"></circle>
-            <circle cx="14" cy="14" r="10" stroke="#2ecc71" stroke-dasharray="${cOuter}" stroke-dashoffset="${oSteps}"></circle>
-            <circle cx="14" cy="14" r="7" stroke="#3498db33"></circle>
-            <circle cx="14" cy="14" r="7" stroke="#3498db" stroke-dasharray="${cMid}" stroke-dashoffset="${oTime}"></circle>
-            <circle cx="14" cy="14" r="4" stroke="#ff475733"></circle>
-            <circle cx="14" cy="14" r="4" stroke="#ff4757" stroke-dasharray="${cInner}" stroke-dashoffset="${oCal}"></circle>
-          </svg>
-          <span class="date-label">${isActive ? (d.getMonth()+1)+'/'+dateNum : dateNum}</span>
-        </div>
-      `;
-      calendarEl.insertAdjacentHTML('beforeend', dayHtml);
-    }
-  }
-
-  function updateActivityRings() {
-    // Math logic for SVG dashoffset
-    // c = 2 * PI * r
-    const cSteps = 2 * Math.PI * 80;
-    const cTime = 2 * Math.PI * 60;
-    const cCal = 2 * Math.PI * 40;
-
-    const pSteps = Math.min(100, (activityState.steps / activityState.stepsGoal) * 100);
-    const pTime = Math.min(100, (activityState.time / activityState.timeGoal) * 100);
-    const pCal = Math.min(100, (activityState.calories / activityState.caloriesGoal) * 100);
-
-    const pathSteps = document.getElementById('ring-steps-path');
-    const pathTime = document.getElementById('ring-time-path');
-    const pathCal = document.getElementById('ring-cal-path');
-
-    if (pathSteps) {
-      pathSteps.style.strokeDasharray = cSteps;
-      pathSteps.style.strokeDashoffset = cSteps; // Start empty
-      setTimeout(() => { pathSteps.style.strokeDashoffset = cSteps - (pSteps / 100) * cSteps; }, 100);
-    }
-    
-    if (pathTime) {
-      pathTime.style.strokeDasharray = cTime;
-      pathTime.style.strokeDashoffset = cTime;
-      setTimeout(() => { pathTime.style.strokeDashoffset = cTime - (pTime / 100) * cTime; }, 200);
-    }
-    
-    if (pathCal) {
-      pathCal.style.strokeDasharray = cCal;
-      pathCal.style.strokeDashoffset = cCal;
-      setTimeout(() => { pathCal.style.strokeDashoffset = cCal - (pCal / 100) * cCal; }, 300);
-    }
-  }
-
-  function initActivityChart() {
-    const ctx = document.getElementById('chart-activity-steps');
-    if (!ctx) return;
-    
-    if (activityState.chartInstance) {
-      activityState.chartInstance.update();
-      return;
-    }
-
-    const labels = ['12 am', '6 am', '12 pm', '6 pm', '(h)'];
-    // Mock 24 hour data, spikes around 8am, 12pm, 5pm
-    const data = [0, 0, 0, 0, 0, 0, 300, 2500, 1200, 400, 200, 1500, 1800, 2200, 2100, 500, 800, 100, 50, 200, 300, 0, 0, 0];
-    
-    // To match the 5 label grid on x-axis visually, we just let chart.js scale it
-    // The design has simple green bars with rounded caps
-    activityState.chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: data.map((_, i) => i), // 0 to 23
-        datasets: [{
-          data: data,
-          backgroundColor: '#2ecc71',
-          borderRadius: 4,
-          barPercentage: 0.6,
-          categoryPercentage: 0.8
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#1e293b',
-            padding: 8,
-            bodyFont: { family: 'Inter', size: 11 },
-            callbacks: {
-              title: (context) => `${context[0].label}:00`,
-              label: (context) => `${context.parsed.y} steps`
-            }
-          }
-        },
-        scales: {
-          y: {
-            display: false,
-            beginAtZero: true
-          },
-          x: {
-            grid: {
-              display: true,
-              color: '#e2e8f0',
-              drawBorder: false,
-              tickLength: 5
-            },
-            ticks: {
-              color: '#94a3b8',
-              font: { family: 'Inter', size: 10 },
-              maxRotation: 0,
-              callback: function(val, index) {
-                // Return labels at specific intervals
-                if (index === 0) return '12 am';
-                if (index === 6) return '6 am';
-                if (index === 12) return '12 pm';
-                if (index === 18) return '6 pm';
-                if (index === 23) return '(h)';
-                return '';
-              }
-            }
-          }
-        }
-      }
-    });
   }
 
   // ==========================================================================
@@ -1443,11 +1302,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const unEl = document.getElementById('login-username');
       const pwEl = document.getElementById('login-password');
       const errEl = document.getElementById('login-error-msg');
+      const inlineErrEl = document.getElementById('login-error');
       const submitBtn = document.getElementById('btn-login-submit');
       if (unEl) unEl.value = '';
       if (pwEl) pwEl.value = '';
       if (errEl) errEl.classList.remove('visible');
-      if (submitBtn) { submitBtn.textContent = 'Sign In'; submitBtn.classList.remove('loading'); }
+      if (inlineErrEl) inlineErrEl.classList.remove('visible');
+      if (submitBtn) {
+        submitBtn.classList.remove('loading');
+        const btnText = submitBtn.querySelector('.btn-text');
+        if (btnText) btnText.textContent = 'Sign In';
+      }
       showView('login-screen');
     });
   }

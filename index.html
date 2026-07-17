@@ -37,76 +37,96 @@
       </div>
 
       <!-- 1.5. LOGIN SCREEN -->
-      <div id="login-screen" class="view">
-        <div class="login-content">
-          <div class="login-header">
-            <div class="login-logo">
-              <span class="material-symbols-outlined logo-icon">shield_heart</span>
-            </div>
-            <h1 class="login-title">MedSentry Portal</h1>
-            <p class="login-subtitle">IoT Patient Health Monitoring</p>
+  <div id="login-screen" class="view">
+    <div class="login-content">
+      <div class="login-header">
+        <div class="login-logo">
+          <span class="material-symbols-outlined">monitor_heart</span>
+          <span class="login-title">HealthGuard</span>
+        </div>
+        <div class="login-nav">LOGIN</div>
+      </div>
+      
+      <div class="login-form-wrapper">
+        <h2 class="login-welcome">Welcome Back!</h2>
+        <p class="login-subtitle">Sign in to continue monitoring your health</p>
+        
+        <div class="form-group-login">
+          <label class="login-label">Email Address</label>
+          <div class="input-with-icon">
+            <span class="input-icon-left material-symbols-outlined">mail</span>
+            <input type="email" id="login-username" class="login-input" placeholder="you@example.com" autocomplete="username">
           </div>
-          
-          <div class="login-form">
-            <div class="form-group-login">
-              <label class="login-label">Username</label>
-              <div class="input-with-icon">
-                <span class="material-symbols-outlined input-icon">person</span>
-                <input type="text" id="login-username" class="login-input" placeholder="e.g. patient_demo">
-              </div>
-            </div>
-            
-            <div class="form-group-login">
-              <label class="login-label">Password</label>
-              <div class="input-with-icon">
-                <span class="material-symbols-outlined input-icon">lock</span>
-                <input type="password" id="login-password" class="login-input" placeholder="••••••••">
-              </div>
-            </div>
-            
-            <button class="btn-login-submit" id="btn-login-submit">Sign In</button>
+        </div>
+        
+        <div class="form-group-login">
+          <label class="login-label">Password</label>
+          <div class="input-with-icon">
+            <span class="input-icon-left material-symbols-outlined">lock</span>
+            <input type="password" id="login-password" class="login-input" placeholder="Enter your password" autocomplete="current-password">
+            <button type="button" class="btn-toggle-password" id="btn-toggle-password" aria-label="Toggle password visibility">
+              <span class="material-symbols-outlined" id="icon-password-visibility">visibility_off</span>
+            </button>
           </div>
-
-          <div class="demo-login-section">
-            <div class="demo-login-divider">
-              <span>Or sign in with Demo Account</span>
-            </div>
-            
-            <div class="demo-account-cards">
-              <div class="demo-account-card" data-username="patient_demo">
-                <div class="demo-account-icon patient">
-                  <span class="material-symbols-outlined">patient_list</span>
-                </div>
-                <div class="demo-account-info">
-                  <strong>Patient Demo</strong>
-                  <span>John Doe (Patient)</span>
-                </div>
-              </div>
-
-              <div class="demo-account-card" data-username="guardian_demo">
-                <div class="demo-account-icon guardian">
-                  <span class="material-symbols-outlined">shield_person</span>
-                </div>
-                <div class="demo-account-info">
-                  <strong>Guardian Demo</strong>
-                  <span>Jane Doe (Guardian)</span>
-                </div>
-              </div>
-
-              <div class="demo-account-card" data-username="clinician_demo">
-                <div class="demo-account-icon clinician">
-                  <span class="material-symbols-outlined">medical_services</span>
-                </div>
-                <div class="demo-account-info">
-                  <strong>Clinician Demo</strong>
-                  <span>Dr. Chen (Cardiology)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
+        </div>
+        
+        <div class="login-actions">
+          <button class="btn-login-submit" id="btn-login-submit">
+            <span class="btn-text">Sign In</span>
+            <span class="btn-loader" style="display: none;">
+              <span class="loader-spinner"></span>
+            </span>
+          </button>
+          <div class="forgot-password">Forgot password?</div>
         </div>
       </div>
+      
+      <div class="demo-login-section">
+        <div class="demo-login-divider">
+          <span class="divider-text">Or continue with</span>
+        </div>
+        <div class="demo-account-cards">
+          <div class="demo-account-card" data-username="patient_demo">
+            <div class="demo-account-icon patient">
+              <span class="material-symbols-outlined">patient_list</span>
+            </div>
+            <div class="demo-account-info">
+              <strong>Patient</strong>
+              <span>John Doe</span>
+            </div>
+          </div>
+
+          <div class="demo-account-card" data-username="guardian_demo">
+            <div class="demo-account-icon guardian">
+              <span class="material-symbols-outlined">shield_person</span>
+            </div>
+            <div class="demo-account-info">
+              <strong>Guardian</strong>
+              <span>Jane Doe</span>
+            </div>
+          </div>
+
+          <div class="demo-account-card" data-username="clinician_demo">
+            <div class="demo-account-icon clinician">
+              <span class="material-symbols-outlined">medical_services</span>
+            </div>
+            <div class="demo-account-info">
+              <strong>Clinician</strong>
+              <span>Dr. Chen</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="signup-section">
+        <div class="signup-link">
+          Don't have an account? <span>Create one</span>
+        </div>
+      </div>
+      
+      <div class="login-error" id="login-error"></div>
+    </div>
+  </div>
 
       <!-- MAIN APP CONTAINER (Tabs/Navigation) -->
       <div id="main-app" class="app-container">
@@ -117,7 +137,6 @@
             <span class="device-status-badge" id="header-bt-status">
               <span class="material-symbols-outlined bt-icon">bluetooth</span>
             </span>
-
           </div>
           <div class="header-right">
             <div class="header-profile">
@@ -126,9 +145,6 @@
               </div>
               <span class="patient-header-name" id="header-patient-name">Alexander Pierce</span>
             </div>
-            <button class="btn-logout" id="btn-logout" title="Sign out">
-              <span class="material-symbols-outlined">logout</span>
-            </button>
           </div>
         </header>
 
@@ -138,17 +154,15 @@
           <!-- 2. HOME / DASHBOARD SCREEN -->
           <section id="dashboard-view" class="sub-view active">
             <div class="dashboard-scroll">
-              
-              <!-- Dashboard Title -->
+
               <h2 class="dashboard-title">Patient Health Monitoring Dashboard</h2>
 
-              <!-- Demo Simulator Banner -->
               <div class="demo-banner">
                 <div class="demo-banner-content">
                   <span class="material-symbols-outlined info-icon">info</span>
                   <div>
                     <strong>IoT Vital Simulator</strong>
-                    <p>Toggle patient state to test real-time warning & critical threshold alerts.</p>
+                    <p>Toggle patient state to test real-time warning and critical threshold alerts.</p>
                   </div>
                 </div>
                 <div class="demo-btn-group">
@@ -158,10 +172,7 @@
                 </div>
               </div>
 
-              <!-- Vitals Stack (Stacked Vertically) -->
               <div class="vitals-stack">
-                
-                <!-- Card 1: Heart Rate -->
                 <div class="vital-card hr-card normal-state" id="card-heart-rate">
                   <div class="vital-card-accent"></div>
                   <div class="vital-card-main">
@@ -177,7 +188,6 @@
                       <span class="vital-unit">BPM</span>
                     </div>
                     <div class="vital-card-footer">
-                      <!-- Beating line graph container -->
                       <div class="ecg-waveform">
                         <svg viewBox="0 0 100 20" class="ecg-svg">
                           <path d="M0,10 L30,10 L35,2 L40,18 L45,10 L50,10 L53,7 L56,13 L59,10 L100,10" fill="none" stroke="#e74c3c" stroke-width="1.5" class="ecg-path"></path>
@@ -188,7 +198,6 @@
                   </div>
                 </div>
 
-                <!-- Card 2: Blood Pressure -->
                 <div class="vital-card bp-card normal-state" id="card-bp">
                   <div class="vital-card-accent"></div>
                   <div class="vital-card-main">
@@ -212,7 +221,6 @@
                   </div>
                 </div>
 
-                <!-- Card 3: Body Temperature -->
                 <div class="vital-card temp-card normal-state" id="card-temp">
                   <div class="vital-card-accent"></div>
                   <div class="vital-card-main">
@@ -225,7 +233,7 @@
                     </div>
                     <div class="vital-card-body">
                       <span class="vital-value" id="val-temp">36.8</span>
-                      <span class="vital-unit">°C</span>
+                      <span class="vital-unit">C</span>
                     </div>
                     <div class="vital-card-footer">
                       <span class="vital-sparkline-placeholder">
@@ -236,7 +244,6 @@
                   </div>
                 </div>
 
-                <!-- Card 4: Blood Oxygen (SpO2) -->
                 <div class="vital-card spo2-card normal-state" id="card-spo2">
                   <div class="vital-card-accent"></div>
                   <div class="vital-card-main">
@@ -259,7 +266,88 @@
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </section>
 
+          <!-- 2.5 VITALS SCREEN (Separated for tab navigation) -->
+          <section id="vitals-view" class="sub-view">
+            <div class="vitals-scroll">
+              <!-- Vitals Header (Orange) -->
+              <div class="vitals-header">
+                <div class="vitals-header-left">
+                  <div class="heart-rate-main">
+                    <span class="hr-value" id="val-heart-rate">78</span>
+                    <span class="hr-unit">bpm</span>
+                  </div>
+                  <div class="hr-description">
+                    <p>Sleeping heart rate was below your norm—a sign<br>of solid recovery and a calm system</p>
+                  </div>
+                </div>
+                <div class="vitals-header-right">
+                  <div class="hr-min-max">
+                    <span class="hr-min-label">Low</span>
+                    <span class="hr-min" id="val-hr-min">49</span>
+                    <span class="hr-max-label">High</span>
+                    <span class="hr-max" id="val-hr-max">124</span>
+                  </div>
+                  <div class="hr-sparkline">
+                    <canvas id="hr-sparkline" width="80" height="40"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Vitals Grid -->
+              <div class="vitals-grid">
+                <div class="vital-grid-item respiratory-item">
+                  <div class="vital-grid-label">Respiratory Rate</div>
+                  <div class="vital-grid-value">
+                    <div class="respiratory-icon">
+                      <!-- Decorative dots -->
+                    </div>
+                    <span class="vital-grid-number">52</span>
+                  </div>
+                  <div class="vital-grid-status">Fair</div>
+                </div>
+                <div class="vital-grid-item temp-item">
+                  <div class="vital-grid-label">Body Temperature</div>
+                  <div class="vital-grid-value">
+                    <span class="vital-grid-number" id="val-temp">37.6</span>
+                  </div>
+                  <div class="vital-grid-status">High</div>
+                  <div class="temp-bar">
+                    <div class="temp-bar-fill" id="temp-bar-fill" style="height: 70%"></div>
+                  </div>
+                </div>
+                <div class="vital-grid-item sleep-item">
+                  <div class="vital-grid-label">Sleep</div>
+                  <div class="vital-grid-value">
+                    <span class="vital-grid-number">8.1</span>
+                    <span class="vital-grid-sub">h</span>
+                  </div>
+                  <div class="vital-grid-status">In Good</div>
+                  <div class="sleep-bar">
+                    <div class="sleep-bar-light" style="width: 30%"></div>
+                    <div class="sleep-bar-deep" style="width: 40%"></div>
+                    <div class="sleep-bar-rem" style="width: 30%"></div>
+                  </div>
+                </div>
+                <div class="vital-grid-item hrv-item">
+                  <div class="vital-grid-label">HRV Balance</div>
+                  <div class="vital-grid-value">
+                    <span class="vital-grid-number">79</span>
+                  </div>
+                  <div class="vital-grid-status">ms/Good</div>
+                  <div class="hrv-graph">
+                    <!-- Simple graph -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer Link -->
+              <div class="create-account-link">
+                <span>Create a new account</span>
+                <span class="material-symbols-outlined">chevron_right</span>
               </div>
             </div>
           </section>
@@ -433,100 +521,9 @@
                 <p>This Patient Dashboard is strictly read-only. Device management, health records, or notification settings cannot be edited from this portal.</p>
               </div>
 
-            </div>
-          </section>
-
-          <!-- 5. DAILY ACTIVITY SCREEN -->
-          <section id="activity-view" class="sub-view">
-            <div class="activity-scroll">
-              
-              <div class="activity-header">
-                <div class="activity-title-row">
-                  <span class="material-symbols-outlined">arrow_back_ios</span>
-                  <h3>Daily activity</h3>
-                  <div class="activity-header-icons">
-                    <span class="material-symbols-outlined">share</span>
-                    <span class="material-symbols-outlined">calendar_today</span>
-                    <span class="material-symbols-outlined">more_vert</span>
-                  </div>
-                </div>
-                
-                <div class="activity-calendar" id="activity-calendar">
-                  <!-- JS will generate calendar days here -->
-                </div>
-              </div>
-
-              <!-- Main Rings Card -->
-              <div class="activity-rings-card">
-                <div class="activity-rings-container">
-                  <svg class="activity-rings-svg" viewBox="0 0 200 200">
-                    <!-- Steps Ring (Green) -->
-                    <circle class="ring-bg" cx="100" cy="100" r="80" stroke="#2ecc7133"></circle>
-                    <circle class="ring-progress ring-steps" cx="100" cy="100" r="80" stroke="#2ecc71" id="ring-steps-path"></circle>
-                    
-                    <!-- Time Ring (Blue) -->
-                    <circle class="ring-bg" cx="100" cy="100" r="60" stroke="#3498db33"></circle>
-                    <circle class="ring-progress ring-time" cx="100" cy="100" r="60" stroke="#3498db" id="ring-time-path"></circle>
-                    
-                    <!-- Calories Ring (Pink) -->
-                    <circle class="ring-bg" cx="100" cy="100" r="40" stroke="#ff475733"></circle>
-                    <circle class="ring-progress ring-cal" cx="100" cy="100" r="40" stroke="#ff4757" id="ring-cal-path"></circle>
-                  </svg>
-                </div>
-                
-                <div class="activity-metrics-grid">
-                  <div class="activity-metric">
-                    <span class="metric-label">Steps</span>
-                    <div class="metric-value-row">
-                      <span class="material-symbols-outlined icon-green">directions_run</span>
-                      <span class="metric-value" id="act-steps-val">8,105</span>
-                    </div>
-                    <span class="metric-goal">/6,000</span>
-                  </div>
-                  
-                  <div class="activity-metric">
-                    <span class="metric-label">Active time</span>
-                    <div class="metric-value-row">
-                      <span class="material-symbols-outlined icon-blue">schedule</span>
-                      <span class="metric-value" id="act-time-val">85</span>
-                    </div>
-                    <span class="metric-goal">/90 mins</span>
-                  </div>
-                  
-                  <div class="activity-metric">
-                    <span class="metric-label">Activity calories</span>
-                    <div class="metric-value-row">
-                      <span class="material-symbols-outlined icon-pink">local_fire_department</span>
-                      <span class="metric-value" id="act-cal-val">299</span>
-                    </div>
-                    <span class="metric-goal">/500 kcal</span>
-                  </div>
-                </div>
-
-                <div class="activity-extra-stats">
-                  <div class="extra-stat-row">
-                    <span class="extra-stat-label">Total burnt calories</span>
-                    <span class="extra-stat-dots"></span>
-                    <span class="extra-stat-value"><strong id="act-total-cal">1,873</strong> kcal</span>
-                  </div>
-                  <div class="extra-stat-row">
-                    <span class="extra-stat-label">Distance while active</span>
-                    <span class="extra-stat-dots"></span>
-                    <span class="extra-stat-value"><strong id="act-dist">6.49</strong> km</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Steps Chart Card -->
-              <div class="activity-chart-card">
-                <h4>Steps</h4>
-                <div class="activity-chart-container">
-                  <canvas id="chart-activity-steps"></canvas>
-                </div>
-                <div class="activity-chart-footer">
-                  <h4>Active time</h4>
-                </div>
-              </div>
+              <button class="btn-logout" id="btn-logout" aria-label="Log out">
+                <span class="material-symbols-outlined">logout</span>
+              </button>
 
             </div>
           </section>
@@ -686,7 +683,7 @@
 
         </main>
 
-        <!-- Bottom Navigation Bar (MD3 style) -->
+        <!-- Bottom Navigation Bar -->
         <nav class="app-nav-md3">
           <button class="nav-item-btn active" data-tab="dashboard-view" aria-label="Home">
             <span class="material-symbols-outlined icon">home</span>
@@ -697,12 +694,8 @@
             <span class="nav-btn-label">Report</span>
             <span class="nav-tab-badge" id="nav-report-badge" style="display: none;">0</span>
           </button>
-          <button class="nav-item-btn" data-tab="activity-view" aria-label="Activity">
-            <span class="material-symbols-outlined icon">directions_run</span>
-            <span class="nav-btn-label">Activity</span>
-          </button>
           <button class="nav-item-btn nav-sos-btn" data-tab="sos-view" aria-label="SOS">
-            <span class="material-symbols-outlined icon">emergency</span>
+            <span class="material-symbols-outlined icon">sos</span>
             <span class="nav-btn-label">SOS</span>
           </button>
           <button class="nav-item-btn" data-tab="settings-view" aria-label="Settings">
